@@ -1,0 +1,1 @@
+Drop Tony's photos and videos in this folder, then list them in script.js (WORKS).

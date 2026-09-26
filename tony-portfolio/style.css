@@ -1,0 +1,45 @@
+:root{--hue:180;--fg:#f2f0ea;--mute:#9fb0ac;--accent:#f0a544;--line:rgba(255,255,255,.18)}
+*{box-sizing:border-box}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+body{margin:0;background:hsl(var(--hue) 40% 8%);color:var(--fg);font:400 1.05rem/1.6 Manrope,system-ui,sans-serif;transition:background .8s;text-align:center;overflow-x:hidden}
+h1,h2{font-family:Fraunces,Georgia,serif;line-height:1;margin:0}
+a,button{color:inherit;font:inherit}
+:focus-visible{outline:2px solid var(--accent);outline-offset:3px}
+nav{position:fixed;top:0;left:0;right:0;z-index:5;display:flex;justify-content:center;gap:1.6rem;padding:calc(14px + env(safe-area-inset-top,0px)) 4vw 14px;background:linear-gradient(hsl(var(--hue) 40% 8%),transparent);font-size:.95rem}
+nav a{text-decoration:none}nav a:hover{color:var(--accent)}
+.logo{font-family:Fraunces,serif;font-weight:800}
+header{min-height:100svh;display:grid;place-content:center;justify-items:center;position:relative;overflow:hidden;padding:6rem 5vw 4rem}
+header h1{font-size:clamp(3.6rem,15vw,11rem);font-weight:800;letter-spacing:-.03em;position:relative}
+header p{color:var(--mute);font-size:1.2rem;max-width:32ch;margin:1.4rem 0 2.5rem;position:relative}
+.cue{color:var(--accent);font-weight:700;animation:bob 1.8s ease-in-out infinite}
+@keyframes bob{50%{transform:translateY(8px)}}
+.vf{position:absolute;width:200px;height:140px;left:var(--x,50%);top:var(--y,45%);transform:translate(-50%,-50%);pointer-events:none;transition:left .3s ease-out,top .3s ease-out}
+.vf i{position:absolute;width:26px;height:26px;border:2px solid var(--accent)}
+.vf i:nth-child(1){top:0;left:0;border-right:0;border-bottom:0}.vf i:nth-child(2){top:0;right:0;border-left:0;border-bottom:0}
+.vf i:nth-child(3){bottom:0;left:0;border-right:0;border-top:0}.vf i:nth-child(4){bottom:0;right:0;border-left:0;border-top:0}
+.vf b{position:absolute;top:-1.6rem;left:0;font-size:.8rem;color:var(--accent);white-space:nowrap}
+.vf b:before{content:"";display:inline-block;width:.6rem;height:.6rem;border-radius:50%;background:#e23b2e;margin-right:.4rem;animation:rec 1.2s steps(2) infinite}
+@keyframes rec{50%{opacity:0}}
+.chapter{position:relative}
+.stage{position:sticky;top:0;height:100svh;overflow:hidden;display:flex;flex-direction:column;justify-content:center;gap:2rem;padding-top:env(safe-area-inset-top,0px)}
+.head h2{font-size:clamp(2.6rem,8vw,5.5rem);font-weight:800}
+.head p{color:var(--mute);margin:.5rem 0 1rem}
+.track{display:flex;gap:4vw;padding:0 calc(50vw - min(160px,35vw));width:max-content;will-change:transform;align-items:center;min-height:min(320px,70vw)}
+.empty{color:var(--mute);font-size:1.1rem;font-style:italic;padding:0 4vw}
+.frame{flex:none;width:min(320px,70vw);aspect-ratio:4/5;border:0;padding:0;border-radius:6px;overflow:hidden;cursor:pointer;display:grid;place-items:center;box-shadow:0 20px 50px rgba(0,0,0,.45);transition:box-shadow .3s}
+.frame:hover{box-shadow:0 20px 60px hsl(var(--hue) 80% 50%/.45)}
+.frame img,.frame video{width:100%;height:100%;object-fit:cover;display:block}
+.frame em{font:700 1.3rem Fraunces,serif;font-style:normal;color:#fff;opacity:.85;padding:1rem}
+.bar{position:absolute;left:0;bottom:0;height:3px;width:100%;background:var(--accent);transform:scaleX(0);transform-origin:left}
+#contact{min-height:80svh;display:grid;place-content:center;justify-items:center;padding:6rem 5vw}
+#contact h2{font-size:clamp(2.2rem,7vw,4.5rem);margin-bottom:2rem}
+.contact{width:min(520px,100%)}
+.contact a{display:flex;justify-content:space-between;gap:1rem;padding:1.1rem 0;border-bottom:1px solid var(--line);text-decoration:none}
+.contact a:hover{color:var(--accent)}.contact small{color:var(--mute);font-size:.95rem}
+footer{padding:2rem 5vw calc(2rem + env(safe-area-inset-bottom,0px));color:var(--mute);font-size:.9rem}
+#lb{position:fixed;inset:0;z-index:20;background:rgba(0,0,0,.92);display:grid;place-items:center;padding:4vw;cursor:zoom-out}
+#lb[hidden]{display:none}
+#lb img,#lb video{max-width:100%;max-height:90svh;border-radius:6px}
+.still .stage{position:static;height:auto;padding:5rem 0 3rem}
+.still .track{width:auto;overflow-x:auto;padding:1rem 5vw}
+@media (prefers-reduced-motion:reduce){.cue,.vf b:before{animation:none}.vf,body{transition:none}}
