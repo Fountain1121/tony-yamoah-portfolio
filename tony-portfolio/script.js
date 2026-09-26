@@ -3,7 +3,6 @@
    Any category left empty will show a "No works uploaded yet" message on the page. */
 var WORKS={
 film:[
-    {src:"works/film/Img 4154.mp4", title:"Film 01"},
     {src:"works/film/Img 0215.mp4", title:"Film 02"},
     {src:"works/film/Img 0834.mp4", title:"Film 03"},
     {src:"works/film/Img 3922.mp4", title:"Film 04"}
@@ -16,7 +15,8 @@ photo:[
     {src:"works/photo/IMG_3294.jpg", title:"Photo 14"},
 ],
 video:[
-   {src:"works/video/Img 3864.mp4", title:"Video 01"}
+   {src:"works/film/Img 4154.mp4", title:"Video 01"},
+   {src:"works/video/Img 3864.mp4", title:"Video 02"}
 ]};
 
 var CATS=[
