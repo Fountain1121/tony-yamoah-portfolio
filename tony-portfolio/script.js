@@ -9,16 +9,7 @@ film:[
     {src:"works/film/Img 3922.mp4", title:"Film 04"}
 ],
 photo:[
-    {src:"works/photo/IMG_2742.JPG", title:"Photo 01"},
-    {src:"works/photo/IMG_2743.JPG", title:"Photo 02"},
     {src:"works/photo/IMG_2744.JPG", title:"Photo 03"},
-    {src:"works/photo/IMG_2745.JPG", title:"Photo 04"},
-    {src:"works/photo/IMG_2746.JPG", title:"Photo 05"},
-    {src:"works/photo/IMG_2747.JPG", title:"Photo 06"},
-    {src:"works/photo/IMG_2748.JPG", title:"Photo 07"},
-    {src:"works/photo/IMG_2749.JPG", title:"Photo 08"},
-    {src:"works/photo/IMG_2750.JPG", title:"Photo 09"},
-    {src:"works/photo/IMG_2751.JPG", title:"Photo 10"},
     {src:"works/photo/IMG_3252.jpg", title:"Photo 11"},
     {src:"works/photo/IMG_3258.jpg", title:"Photo 12"},
     {src:"works/photo/IMG_3262.jpg", title:"Photo 13"},
