@@ -27,35 +27,201 @@ photo:[
 video:[
    {src:"works/video/Img 3864.mp4", title:"Video 01"}
 ]};
-var C=[{id:"film",t:"Film",d:"Stories in motion.",h:190},{id:"photo",t:"Photography",d:"Light, held still.",h:28},{id:"video",t:"Videography",d:"Moments, as they happen.",h:222}];
-var still=matchMedia("(prefers-reduced-motion:reduce)").matches;
-if(still)document.body.classList.add("still");
-var chap=[],main=document.getElementById("journey"),lb=document.getElementById("lb");
-function isVid(s){return /\.(mp4|webm|mov)$/i.test(s)}
-function openLB(w){lb.innerHTML="";var v=w.video||isVid(w.src),e=document.createElement(v?"video":"img");e.src=w.src;if(v){e.controls=true;e.autoplay=true}lb.appendChild(e);lb.hidden=false}
-lb.onclick=function(e){if(e.target===lb)lb.hidden=true};
-addEventListener("keydown",function(e){if(e.key==="Escape")lb.hidden=true});
-function frame(w,c){var b=document.createElement("button");b.className="frame";
-var v=w.video||isVid(w.src),e=document.createElement(v?"video":"img");e.src=w.src;
-if(v){e.muted=true;e.loop=true;e.playsInline=true;e.preload="metadata";b.onmouseenter=function(){e.play()};b.onmouseleave=function(){e.pause()}}else e.alt=w.title||c.t;
-b.setAttribute("aria-label",w.title||c.t);b.appendChild(e);b.onclick=function(){openLB(w)};return b}
-function build(k){var o=chap[k],c=o.c,list=WORKS[c.id],t=o.track;t.innerHTML="";
-if(!list.length){var m=document.createElement("p");m.className="empty";m.textContent="No works uploaded yet.";t.appendChild(m)}
-else list.forEach(function(w){t.appendChild(frame(w,c))});
-layout()}
-C.forEach(function(c,k){var s=document.createElement("section");s.className="chapter";s.id=c.id;
-s.innerHTML='<div class="stage"><div class="head"><h2>'+c.t+'</h2><p>'+c.d+'</p></div><div class="track"></div><div class="bar"></div></div>';
-main.appendChild(s);var o={c:c,sec:s,track:s.querySelector(".track"),bar:s.querySelector(".bar"),dist:0};chap.push(o);build(k)});
-function layout(){chap.forEach(function(o){o.dist=Math.max(0,o.track.scrollWidth-innerWidth);o.sec.style.height=(still||!WORKS[o.c.id].length)?"auto":(innerHeight+o.dist)+"px"});tick()}
-function tick(){var hue=180,mid=innerHeight/2;
-chap.forEach(function(o){var r=o.sec.getBoundingClientRect();if(r.top<=mid&&r.bottom>mid)hue=o.c.h;if(still||!WORKS[o.c.id].length)return;
-var p=o.dist?Math.min(1,Math.max(0,-r.top/o.dist)):0;o.track.style.transform="translateX("+(-p*o.dist)+"px)";o.bar.style.transform="scaleX("+p+")";
-[].forEach.call(o.track.children,function(f){var fr=f.getBoundingClientRect(),d=(fr.left+fr.width/2-innerWidth/2)/innerWidth,a=Math.abs(d);
-f.style.transform="translateY("+(a*50)+"px) rotate("+(d*9)+"deg) scale("+(1-Math.min(a,1)*.18)+")";f.style.opacity=1-Math.min(a,1)*.5})});
-document.documentElement.style.setProperty("--hue",hue)}
-var busy=false;function req(){if(!busy){busy=true;requestAnimationFrame(function(){busy=false;tick()})}}
-addEventListener("scroll",req,{passive:true});addEventListener("resize",layout);addEventListener("load",layout);
-/* hero viewfinder */
+
+var CATS=[
+  {id:"film",  t:"Film",        d:"Stories in motion.",     h:190},
+  {id:"photo", t:"Photography", d:"Light, held still.",     h:28},
+  {id:"video", t:"Videography", d:"Moments, as they happen.", h:222}
+];
+
+var reduceMotion=matchMedia("(prefers-reduced-motion:reduce)").matches;
+var isVid=function(s){return /\.(mp4|webm|mov|m4v)$/i.test(s)};
+var main=document.getElementById("journey");
+
+/* ---------- lightbox ---------- */
+var lb=document.getElementById("lb"),lbBody=document.getElementById("lbBody"),lbClose=document.getElementById("lbClose");
+var lastFocus=null;
+function openLB(w){
+  lastFocus=document.activeElement;
+  lbBody.innerHTML="";
+  var v=w.video||isVid(w.src),el=document.createElement(v?"video":"img");
+  el.src=w.src;
+  if(v){el.controls=true;el.playsInline=true;el.autoplay=true}
+  else{el.alt=w.title||""}
+  lbBody.appendChild(el);
+  lb.hidden=false;
+  lbClose.focus();
+  if(v)el.play().catch(function(){});
+}
+function closeLB(){
+  var v=lbBody.querySelector("video");if(v)v.pause();
+  lb.hidden=true;lbBody.innerHTML="";
+  if(lastFocus)lastFocus.focus();
+}
+lb.addEventListener("click",function(e){if(e.target===lb)closeLB()});
+lbClose.addEventListener("click",closeLB);
+addEventListener("keydown",function(e){if(e.key==="Escape"&&!lb.hidden)closeLB()});
+
+/* ---------- build one carousel frame (lazy-loaded) ---------- */
+function makeFrame(w,cat){
+  var b=document.createElement("button");
+  b.className="frame";b.type="button";
+  b.setAttribute("aria-label",(w.title||cat.t));
+  var v=w.video||isVid(w.src);
+  var el=document.createElement(v?"video":"img");
+  el.dataset.src=w.src;
+  if(v){el.muted=true;el.loop=true;el.playsInline=true;el.preload="none";el.setAttribute("aria-hidden","true")}
+  else{el.loading="lazy";el.decoding="async";el.alt=""}
+  b.appendChild(el);
+
+  if(v){
+    b.addEventListener("pointerenter",function(){if(el.src)el.play().catch(function(){})});
+    b.addEventListener("pointerleave",function(){el.pause()});
+  }
+
+  var dragged=false;
+  b.addEventListener("click",function(){if(!dragged)openLB(w)});
+  b._setDragged=function(val){dragged=val};
+  return b;
+}
+
+/* ---------- build a chapter (normal document flow; carousel scrolls natively) ---------- */
+function buildChapter(cat){
+  var sec=document.createElement("section");
+  sec.className="chapter";sec.id=cat.id;
+  sec.innerHTML=
+    '<div class="head"><h2>'+cat.t+'</h2><p>'+cat.d+'</p></div>'+
+    '<div class="carousel">'+
+      '<button class="navbtn prev" aria-label="Previous ' + cat.t.toLowerCase() + ' work">‹</button>'+
+      '<div class="track" tabindex="0" aria-label="'+cat.t+' works, scroll left or right"></div>'+
+      '<button class="navbtn next" aria-label="Next ' + cat.t.toLowerCase() + ' work">›</button>'+
+    '</div>'+
+    '<div class="bar" aria-hidden="true"><i></i></div>';
+  main.appendChild(sec);
+
+  var track=sec.querySelector(".track"),bar=sec.querySelector(".bar i");
+  var list=WORKS[cat.id]||[];
+
+  if(!list.length){
+    track.innerHTML="";
+    var m=document.createElement("p");m.className="empty";m.textContent="No works uploaded yet.";
+    track.appendChild(m);
+    sec.querySelector(".carousel").style.display="block";
+    sec.querySelector(".navbtn.prev").style.display="none";
+    sec.querySelector(".navbtn.next").style.display="none";
+    bar.parentElement.style.display="none";
+    return {sec:sec,track:track,empty:true};
+  }
+
+  var frames=list.map(function(w){var f=makeFrame(w,cat);track.appendChild(f);return f});
+
+  /* --- drag to scroll (mouse users without horizontal wheel/trackpad) --- */
+  var down=false,startX=0,startScroll=0,moved=false;
+  track.addEventListener("pointerdown",function(e){
+    if(e.pointerType==="mouse"){down=true;moved=false;startX=e.clientX;startScroll=track.scrollLeft;track.setPointerCapture(e.pointerId)}
+  });
+  track.addEventListener("pointermove",function(e){
+    if(!down)return;
+    var dx=e.clientX-startX;
+    if(Math.abs(dx)>6)moved=true;
+    track.scrollLeft=startScroll-dx;
+  });
+  function endDrag(e){
+    if(!down)return;down=false;
+    if(moved)frames.forEach(function(f){f._setDragged(true);requestAnimationFrame(function(){f._setDragged(false)})});
+  }
+  track.addEventListener("pointerup",endDrag);
+  track.addEventListener("pointerleave",endDrag);
+
+  /* --- keyboard: left/right steps one frame at a time --- */
+  track.addEventListener("keydown",function(e){
+    if(e.key!=="ArrowRight"&&e.key!=="ArrowLeft")return;
+    e.preventDefault();
+    var step=(frames[0].offsetWidth)+parseFloat(getComputedStyle(track).columnGap||24);
+    track.scrollBy({left:e.key==="ArrowRight"?step:-step,behavior:reduceMotion?"auto":"smooth"});
+  });
+
+  /* --- arrow buttons --- */
+  var step=function(){return frames[0].offsetWidth+parseFloat(getComputedStyle(track).columnGap||24)};
+  sec.querySelector(".navbtn.prev").addEventListener("click",function(){track.scrollBy({left:-step(),behavior:reduceMotion?"auto":"smooth"})});
+  sec.querySelector(".navbtn.next").addEventListener("click",function(){track.scrollBy({left:step(),behavior:reduceMotion?"auto":"smooth"})});
+
+  /* --- lazy-load media slightly ahead of view, using the track itself as the root --- */
+  var io=new IntersectionObserver(function(entries){
+    entries.forEach(function(en){
+      if(en.isIntersecting){
+        var el=en.target.querySelector("[data-src]");
+        if(el&&!el.src){el.src=el.dataset.src;el.removeAttribute("data-src")}
+      }
+    });
+  },{root:track,rootMargin:"0px 120% 0px 120%"});
+  frames.forEach(function(f){io.observe(f)});
+
+  /* --- O(1) "active" (centered) frame + progress bar, updated on scroll (rAF-throttled) --- */
+  var gap=0,frameStep=0,ticking=false;
+  function measure(){
+    gap=parseFloat(getComputedStyle(track).columnGap||24);
+    frameStep=(frames[0]?frames[0].offsetWidth:300)+gap;
+  }
+  function update(){
+    ticking=false;
+    if(!frameStep)measure();
+    var max=track.scrollWidth-track.clientWidth;
+    bar.style.width=max>0?(Math.min(1,track.scrollLeft/max)*100)+"%":"100%";
+    var idx=Math.round(track.scrollLeft/frameStep);
+    idx=Math.max(0,Math.min(frames.length-1,idx));
+    frames.forEach(function(f,i){f.classList.toggle("active",i===idx)});
+  }
+  track.addEventListener("scroll",function(){if(!ticking){ticking=true;requestAnimationFrame(update)}},{passive:true});
+  measure();update();
+
+  /* --- pause offscreen videos to save battery/CPU --- */
+  var pio=new IntersectionObserver(function(entries){
+    entries.forEach(function(en){
+      var v=en.target.querySelector("video");
+      if(v&&!en.isIntersecting)v.pause();
+    });
+  },{threshold:0});
+  frames.forEach(function(f){pio.observe(f)});
+
+  return {sec:sec,track:track,measure:measure,update:update,empty:false};
+}
+
+var chapters=CATS.map(buildChapter);
+
+/* re-measure step sizes on resize (debounced) */
+var rTimer;
+addEventListener("resize",function(){
+  clearTimeout(rTimer);
+  rTimer=setTimeout(function(){chapters.forEach(function(c){if(!c.empty){c.measure();c.update()}})},200);
+});
+
+/* ---------- section reveal + ambient hue shift (IntersectionObserver, no scroll math) ---------- */
+var revealIO=new IntersectionObserver(function(entries){
+  entries.forEach(function(en){if(en.isIntersecting)en.target.classList.add("in")});
+},{threshold:.2});
+document.querySelectorAll(".head").forEach(function(h){revealIO.observe(h)});
+
+var hueIO=new IntersectionObserver(function(entries){
+  entries.forEach(function(en){
+    if(en.isIntersecting){
+      var cat=CATS.find(function(c){return c.id===en.target.id});
+      if(cat)document.documentElement.style.setProperty("--hue",cat.h);
+    }
+  });
+},{rootMargin:"-45% 0px -45% 0px",threshold:0});
+chapters.forEach(function(c){hueIO.observe(c.sec)});
+
+/* ---------- hero viewfinder + timecode ---------- */
 var vf=document.getElementById("vf"),hd=document.getElementById("top");
-hd.addEventListener("pointermove",function(e){var r=hd.getBoundingClientRect();vf.style.setProperty("--x",e.clientX-r.left+"px");vf.style.setProperty("--y",e.clientY-r.top+"px")});
-var n=0;setInterval(function(){n++;var p=function(x){return String(x).padStart(2,"0")};document.getElementById("tc").textContent=p(Math.floor(n/3600))+":"+p(Math.floor(n/60)%60)+":"+p(n%60)},1000);
+hd.addEventListener("pointermove",function(e){
+  var r=hd.getBoundingClientRect();
+  vf.style.setProperty("--x",(e.clientX-r.left)+"px");
+  vf.style.setProperty("--y",(e.clientY-r.top)+"px");
+});
+var n=0,tc=document.getElementById("tc");
+setInterval(function(){
+  n++;
+  var p=function(x){return String(x).padStart(2,"0")};
+  tc.textContent=p(Math.floor(n/3600))+":"+p(Math.floor(n/60)%60)+":"+p(n%60);
+},1000);
