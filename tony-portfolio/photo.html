@@ -41,7 +41,13 @@
 <footer>© 2026 Tony Yamoah</footer>
 
 <div id="lb" hidden role="dialog" aria-modal="true" aria-label="Work preview">
-  <button id="lbClose" aria-label="Close preview">×</button>
+  <button id="lbClose" aria-label="Exit focus">×</button>
+  <p id="lbTitle" class="focus-title" aria-live="polite"></p>
+  <div class="focus-controls" role="group" aria-label="Focused work controls">
+    <button id="lbPrev" type="button" aria-label="Previous work">Previous</button>
+    <button id="lbExit" type="button">Exit focus</button>
+    <button id="lbNext" type="button" aria-label="Next work">Next</button>
+  </div>
   <p id="lbStatus" hidden role="status" aria-live="polite"></p>
   <div id="lbBody"></div>
 </div>

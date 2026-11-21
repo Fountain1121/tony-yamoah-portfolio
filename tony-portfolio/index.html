@@ -22,7 +22,7 @@
 
 <main>
 <header id="top" class="hero">
-  <video class="hero-video" id="heroVideo" muted playsinline preload="none" aria-hidden="true">
+  <video class="hero-video" id="heroVideo" playsinline preload="none" aria-hidden="true">
     <source data-src="works/video/intro.mp4" type="video/mp4">
   </video>
   <div class="hero-shade" aria-hidden="true"></div>
@@ -30,14 +30,15 @@
     <p class="eyebrow">A portfolio by Tony Yamoah</p>
     <h1>Tony<br>Yamoah</h1>
     <p class="hero-description">Creative direction, film, photography and the moments in between.</p>
+    <p class="hero-status" id="heroStatus" hidden role="status" aria-live="polite"></p>
     <div class="hero-actions">
       <a class="primary-link" href="film.html">Explore the work <span aria-hidden="true">↓</span></a>
       <a class="secondary-link" href="#contact">Get in touch</a>
     </div>
   </div>
   <div class="hero-controls" role="group" aria-label="Intro video controls">
-    <button id="heroPlayback" type="button" aria-label="Pause intro video">Pause intro</button>
-    <button id="heroSound" type="button" aria-label="Turn sound on">Sound off</button>
+    <button id="heroPlayback" type="button" aria-label="Play intro video with sound">Play intro with sound</button>
+    <button id="heroSound" type="button" aria-label="Mute intro">Sound on</button>
   </div>
 </header>
 
