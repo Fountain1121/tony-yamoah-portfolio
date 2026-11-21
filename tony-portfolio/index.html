@@ -20,11 +20,24 @@
   </div>
 </nav>
 
-<header id="top">
-  <div class="vf" id="vf" aria-hidden="true"><i></i><i></i><i></i><i></i><b>REC <span id="tc">00:00:00</span></b></div>
-  <h1>Tony<br>Yamoah</h1>
-  <p>Creative Director, filmmaker, photographer and videographer.</p>
-  <span class="cue">Scroll to begin the journey</span>
+<header id="top" class="hero">
+  <video class="hero-video" id="heroVideo" muted playsinline preload="metadata" aria-hidden="true">
+    <source src="works/video/intro.mp4" type="video/mp4">
+  </video>
+  <div class="hero-shade" aria-hidden="true"></div>
+  <div class="hero-copy">
+    <p class="eyebrow">A portfolio by Tony Yamoah</p>
+    <h1>Tony<br>Yamoah</h1>
+    <p class="hero-description">Creative direction, film, photography and the moments in between.</p>
+    <div class="hero-actions">
+      <a class="primary-link" href="#journey">Explore the work <span aria-hidden="true">↓</span></a>
+      <a class="secondary-link" href="#contact">Get in touch</a>
+    </div>
+  </div>
+  <div class="hero-controls" role="group" aria-label="Intro video controls">
+    <button id="heroPlayback" type="button" aria-label="Pause intro video">Pause intro</button>
+    <button id="heroSound" type="button" aria-label="Turn sound on">Sound off</button>
+  </div>
 </header>
 
 <main id="journey"></main>

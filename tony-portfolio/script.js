@@ -29,6 +29,45 @@ var reduceMotion=matchMedia("(prefers-reduced-motion:reduce)").matches;
 var isVid=function(s){return /\.(mp4|webm|mov|m4v)$/i.test(s)};
 var main=document.getElementById("journey");
 
+/* ---------- intro video ---------- */
+var heroVideo=document.getElementById("heroVideo");
+var heroPlayback=document.getElementById("heroPlayback");
+var heroSound=document.getElementById("heroSound");
+var heroPausedByVisibility=false;
+function updateHeroPlayback(){
+  var playing=!heroVideo.paused&&!heroVideo.ended;
+  heroPlayback.textContent=playing?"Pause intro":"Play intro";
+  heroPlayback.setAttribute("aria-label",playing?"Pause intro video":"Play intro video");
+}
+heroPlayback.addEventListener("click",function(){
+  heroPausedByVisibility=false;
+  if(heroVideo.paused||heroVideo.ended)heroVideo.play().catch(updateHeroPlayback);
+  else heroVideo.pause();
+});
+heroSound.addEventListener("click",function(){
+  heroVideo.muted=!heroVideo.muted;
+  heroSound.textContent=heroVideo.muted?"Sound off":"Sound on";
+  heroSound.setAttribute("aria-label",heroVideo.muted?"Turn sound on":"Mute video");
+  if(!heroVideo.muted&&heroVideo.paused)heroVideo.play().catch(updateHeroPlayback);
+});
+heroVideo.addEventListener("play",updateHeroPlayback);
+heroVideo.addEventListener("pause",updateHeroPlayback);
+heroVideo.addEventListener("ended",updateHeroPlayback);
+if(reduceMotion)updateHeroPlayback();
+else heroVideo.play().catch(updateHeroPlayback);
+var heroVisibilityObserver=new IntersectionObserver(function(entries){
+  entries.forEach(function(entry){
+    if(!entry.isIntersecting&&!heroVideo.paused){
+      heroPausedByVisibility=true;
+      heroVideo.pause();
+    }else if(entry.isIntersecting&&heroPausedByVisibility&&!reduceMotion){
+      heroPausedByVisibility=false;
+      heroVideo.play().catch(updateHeroPlayback);
+    }
+  });
+});
+heroVisibilityObserver.observe(heroVideo);
+
 /* ---------- lightbox ---------- */
 var lb=document.getElementById("lb"),lbBody=document.getElementById("lbBody"),lbClose=document.getElementById("lbClose");
 var lastFocus=null;
@@ -202,17 +241,3 @@ var hueIO=new IntersectionObserver(function(entries){
   });
 },{rootMargin:"-45% 0px -45% 0px",threshold:0});
 chapters.forEach(function(c){hueIO.observe(c.sec)});
-
-/* ---------- hero viewfinder + timecode ---------- */
-var vf=document.getElementById("vf"),hd=document.getElementById("top");
-hd.addEventListener("pointermove",function(e){
-  var r=hd.getBoundingClientRect();
-  vf.style.setProperty("--x",(e.clientX-r.left)+"px");
-  vf.style.setProperty("--y",(e.clientY-r.top)+"px");
-});
-var n=0,tc=document.getElementById("tc");
-setInterval(function(){
-  n++;
-  var p=function(x){return String(x).padStart(2,"0")};
-  tc.textContent=p(Math.floor(n/3600))+":"+p(Math.floor(n/60)%60)+":"+p(n%60);
-},1000);
