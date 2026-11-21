@@ -12,17 +12,18 @@
 <link rel="stylesheet" href="style.css">
 </head>
 <body>
-<a class="skip" href="#journey">Skip to work</a>
-<nav>
-  <a href="#top" class="logo">TY</a>
+<a class="skip" href="#contact">Skip to contact</a>
+<nav aria-label="Primary">
+  <a href="index.html" class="logo">TY</a>
   <div class="links">
-    <a href="#film">Film</a><a href="#photo">Photo</a><a href="#video">Video</a><a href="#contact">Contact</a>
+    <a href="film.html">Film</a><a href="photo.html">Photo</a><a href="video.html">Video</a><a href="#contact">Contact</a>
   </div>
 </nav>
 
+<main>
 <header id="top" class="hero">
-  <video class="hero-video" id="heroVideo" muted playsinline preload="metadata" aria-hidden="true">
-    <source src="works/video/intro.mp4" type="video/mp4">
+  <video class="hero-video" id="heroVideo" muted playsinline preload="none" aria-hidden="true">
+    <source data-src="works/video/intro.mp4" type="video/mp4">
   </video>
   <div class="hero-shade" aria-hidden="true"></div>
   <div class="hero-copy">
@@ -30,7 +31,7 @@
     <h1>Tony<br>Yamoah</h1>
     <p class="hero-description">Creative direction, film, photography and the moments in between.</p>
     <div class="hero-actions">
-      <a class="primary-link" href="#journey">Explore the work <span aria-hidden="true">↓</span></a>
+      <a class="primary-link" href="film.html">Explore the work <span aria-hidden="true">↓</span></a>
       <a class="secondary-link" href="#contact">Get in touch</a>
     </div>
   </div>
@@ -39,8 +40,6 @@
     <button id="heroSound" type="button" aria-label="Turn sound on">Sound off</button>
   </div>
 </header>
-
-<main id="journey"></main>
 
 <section id="contact">
   <h2>Let's make something</h2>
@@ -51,13 +50,9 @@
     <a href="https://x.com/thejesusstan" target="_blank" rel="noopener">X <small>@thejesusstan</small></a>
   </div>
 </section>
+</main>
 
 <footer>© 2026 Tony Yamoah</footer>
-
-<div id="lb" hidden role="dialog" aria-modal="true" aria-label="Work preview">
-  <button id="lbClose" aria-label="Close preview">×</button>
-  <div id="lbBody"></div>
-</div>
 
 <script src="script.js"></script>
 </body>
