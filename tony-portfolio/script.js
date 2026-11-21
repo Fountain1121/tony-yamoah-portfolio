@@ -20,9 +20,9 @@ video:[
 ]};
 
 var CATS=[
-  {id:"film",  t:"Film",        d:"Stories in motion.",     h:190},
-  {id:"photo", t:"Photography", d:"Light, held still.",     h:28},
-  {id:"video", t:"Videography", d:"Moments, as they happen.", h:222}
+  {id:"film",  t:"Film",        h:190},
+  {id:"photo", t:"Photography", h:28},
+  {id:"video", t:"Videography", h:222}
 ];
 
 var reduceMotion=matchMedia("(prefers-reduced-motion:reduce)").matches;
@@ -39,74 +39,121 @@ function updateHeroPlayback(){
   heroPlayback.textContent=playing?"Pause intro":"Play intro";
   heroPlayback.setAttribute("aria-label",playing?"Pause intro video":"Play intro video");
 }
-heroPlayback.addEventListener("click",function(){
-  heroPausedByVisibility=false;
-  if(heroVideo.paused||heroVideo.ended)heroVideo.play().catch(updateHeroPlayback);
-  else heroVideo.pause();
-});
-heroSound.addEventListener("click",function(){
-  heroVideo.muted=!heroVideo.muted;
-  heroSound.textContent=heroVideo.muted?"Sound off":"Sound on";
-  heroSound.setAttribute("aria-label",heroVideo.muted?"Turn sound on":"Mute video");
-  if(!heroVideo.muted&&heroVideo.paused)heroVideo.play().catch(updateHeroPlayback);
-});
-heroVideo.addEventListener("play",updateHeroPlayback);
-heroVideo.addEventListener("pause",updateHeroPlayback);
-heroVideo.addEventListener("ended",updateHeroPlayback);
-if(reduceMotion)updateHeroPlayback();
-else heroVideo.play().catch(updateHeroPlayback);
-var heroVisibilityObserver=new IntersectionObserver(function(entries){
-  entries.forEach(function(entry){
-    if(!entry.isIntersecting&&!heroVideo.paused){
-      heroPausedByVisibility=true;
-      heroVideo.pause();
-    }else if(entry.isIntersecting&&heroPausedByVisibility&&!reduceMotion){
-      heroPausedByVisibility=false;
+if(heroVideo){
+  var heroSource=heroVideo.querySelector("source");
+  function loadHero(){
+    if(heroSource&&!heroSource.src){
+      heroSource.src=heroSource.dataset.src;
+      heroVideo.load();
+    }
+  }
+  heroPlayback.addEventListener("click",function(){
+    heroPausedByVisibility=false;
+    loadHero();
+    if(heroVideo.paused||heroVideo.ended)heroVideo.play().catch(updateHeroPlayback);
+    else heroVideo.pause();
+  });
+  heroSound.addEventListener("click",function(){
+    heroVideo.muted=!heroVideo.muted;
+    heroSound.textContent=heroVideo.muted?"Sound off":"Sound on";
+    heroSound.setAttribute("aria-label",heroVideo.muted?"Turn sound on":"Mute video");
+    if(!heroVideo.muted&&heroVideo.paused){
+      loadHero();
       heroVideo.play().catch(updateHeroPlayback);
     }
   });
-});
-heroVisibilityObserver.observe(heroVideo);
+  heroVideo.addEventListener("play",updateHeroPlayback);
+  heroVideo.addEventListener("pause",updateHeroPlayback);
+  heroVideo.addEventListener("ended",updateHeroPlayback);
+  var connection=navigator.connection;
+  var lowDataMode=connection&&(connection.saveData||connection.effectiveType==="slow-2g"||connection.effectiveType==="2g");
+  if(reduceMotion||lowDataMode)updateHeroPlayback();
+  else{
+    loadHero();
+    heroVideo.play().catch(updateHeroPlayback);
+  }
+  var heroVisibilityObserver=new IntersectionObserver(function(entries){
+    entries.forEach(function(entry){
+      if(!entry.isIntersecting&&!heroVideo.paused){
+        heroPausedByVisibility=true;
+        heroVideo.pause();
+      }else if(entry.isIntersecting&&heroPausedByVisibility&&!reduceMotion){
+        heroPausedByVisibility=false;
+        heroVideo.play().catch(updateHeroPlayback);
+      }
+    });
+  });
+  heroVisibilityObserver.observe(heroVideo);
+}
 
 /* ---------- lightbox ---------- */
 var lb=document.getElementById("lb"),lbBody=document.getElementById("lbBody"),lbClose=document.getElementById("lbClose");
+var lbStatus=document.getElementById("lbStatus");
 var lastFocus=null;
 function openLB(w){
+  if(!lb)return;
   lastFocus=document.activeElement;
   lbBody.innerHTML="";
   var v=w.video||isVid(w.src),el=document.createElement(v?"video":"img");
+  if(v){
+    el.controls=true;el.playsInline=true;el.preload="none";el.autoplay=true;
+    lbStatus.textContent="Loading video…";
+    lbStatus.hidden=false;
+    el.addEventListener("playing",function(){lbStatus.hidden=true});
+    el.addEventListener("error",function(){lbStatus.textContent="This video could not be loaded."});
+  }else{
+    el.loading="eager";el.decoding="async";el.alt=w.title||"";
+  }
   el.src=w.src;
-  if(v){el.controls=true;el.playsInline=true;el.autoplay=true}
-  else{el.alt=w.title||""}
   lbBody.appendChild(el);
   lb.hidden=false;
   lbClose.focus();
-  if(v)el.play().catch(function(){});
+  if(v)el.play().catch(function(){lbStatus.textContent="Press play to start this video."});
 }
 function closeLB(){
-  var v=lbBody.querySelector("video");if(v)v.pause();
+  if(!lb)return;
+  var v=lbBody.querySelector("video");
+  if(v){v.pause();v.removeAttribute("src");v.load()}
   lb.hidden=true;lbBody.innerHTML="";
+  lbStatus.hidden=true;
   if(lastFocus)lastFocus.focus();
 }
-lb.addEventListener("click",function(e){if(e.target===lb)closeLB()});
-lbClose.addEventListener("click",closeLB);
-addEventListener("keydown",function(e){if(e.key==="Escape"&&!lb.hidden)closeLB()});
+if(lb){
+  lb.addEventListener("click",function(e){if(e.target===lb)closeLB()});
+  lbClose.addEventListener("click",closeLB);
+}
+addEventListener("keydown",function(e){if(e.key==="Escape"&&lb&&!lb.hidden)closeLB()});
 
 /* ---------- build one carousel frame (lazy-loaded) ---------- */
 function makeFrame(w,cat){
   var b=document.createElement("button");
   b.className="frame";b.type="button";
-  b.setAttribute("aria-label",(w.title||cat.t));
+  var title=w.title||cat.t;
   var v=w.video||isVid(w.src);
-  var el=document.createElement(v?"video":"img");
-  el.dataset.src=w.src;
-  if(v){el.muted=true;el.loop=true;el.playsInline=true;el.preload="none";el.setAttribute("aria-hidden","true")}
-  else{el.loading="lazy";el.decoding="async";el.alt=""}
-  b.appendChild(el);
-
+  b.setAttribute("aria-label",v?"Play "+title:"View "+title);
   if(v){
-    b.addEventListener("pointerenter",function(){if(el.src)el.play().catch(function(){})});
-    b.addEventListener("pointerleave",function(){el.pause()});
+    b.classList.add("video-frame");
+    var prompt=document.createElement("span");
+    prompt.className="video-prompt";
+    prompt.setAttribute("aria-hidden","true");
+    var icon=document.createElement("span");
+    icon.className="play-icon";
+    icon.textContent="▶";
+    var name=document.createElement("span");
+    name.textContent=title;
+    var action=document.createElement("small");
+    action.textContent="Play video";
+    prompt.appendChild(icon);
+    prompt.appendChild(name);
+    prompt.appendChild(action);
+    b.appendChild(prompt);
+  }else{
+    var el=document.createElement("img");
+    el.dataset.src=w.src;
+    el.loading="lazy";
+    el.decoding="async";
+    el.alt="";
+    b.appendChild(el);
   }
 
   var dragged=false;
@@ -118,9 +165,8 @@ function makeFrame(w,cat){
 /* ---------- build a chapter (normal document flow; carousel scrolls natively) ---------- */
 function buildChapter(cat){
   var sec=document.createElement("section");
-  sec.className="chapter";sec.id=cat.id;
+  sec.className="chapter";
   sec.innerHTML=
-    '<div class="head"><h2>'+cat.t+'</h2><p>'+cat.d+'</p></div>'+
     '<div class="carousel">'+
       '<button class="navbtn prev" aria-label="Previous ' + cat.t.toLowerCase() + ' work">‹</button>'+
       '<div class="track" tabindex="0" aria-label="'+cat.t+' works, scroll left or right"></div>'+
@@ -176,7 +222,7 @@ function buildChapter(cat){
   sec.querySelector(".navbtn.prev").addEventListener("click",function(){track.scrollBy({left:-step(),behavior:reduceMotion?"auto":"smooth"})});
   sec.querySelector(".navbtn.next").addEventListener("click",function(){track.scrollBy({left:step(),behavior:reduceMotion?"auto":"smooth"})});
 
-  /* --- lazy-load media slightly ahead of view, using the track itself as the root --- */
+  /* --- lazy-load images slightly ahead of view; videos load only when opened --- */
   var io=new IntersectionObserver(function(entries){
     entries.forEach(function(en){
       if(en.isIntersecting){
@@ -185,7 +231,7 @@ function buildChapter(cat){
       }
     });
   },{root:track,rootMargin:"0px 120% 0px 120%"});
-  frames.forEach(function(f){io.observe(f)});
+  frames.forEach(function(f){if(f.querySelector("[data-src]"))io.observe(f)});
 
   /* --- O(1) "active" (centered) frame + progress bar, updated on scroll (rAF-throttled) --- */
   var gap=0,frameStep=0,ticking=false;
@@ -205,19 +251,16 @@ function buildChapter(cat){
   track.addEventListener("scroll",function(){if(!ticking){ticking=true;requestAnimationFrame(update)}},{passive:true});
   measure();update();
 
-  /* --- pause offscreen videos to save battery/CPU --- */
-  var pio=new IntersectionObserver(function(entries){
-    entries.forEach(function(en){
-      var v=en.target.querySelector("video");
-      if(v&&!en.isIntersecting)v.pause();
-    });
-  },{threshold:0});
-  frames.forEach(function(f){pio.observe(f)});
-
   return {sec:sec,track:track,measure:measure,update:update,empty:false};
 }
 
-var chapters=CATS.map(buildChapter);
+var categoryId=main&&main.dataset.category;
+var category=CATS.find(function(cat){return cat.id===categoryId});
+var chapters=[];
+if(category){
+  document.documentElement.style.setProperty("--hue",category.h);
+  chapters.push(buildChapter(category));
+}
 
 /* re-measure step sizes on resize (debounced) */
 var rTimer;
@@ -225,19 +268,3 @@ addEventListener("resize",function(){
   clearTimeout(rTimer);
   rTimer=setTimeout(function(){chapters.forEach(function(c){if(!c.empty){c.measure();c.update()}})},200);
 });
-
-/* ---------- section reveal + ambient hue shift (IntersectionObserver, no scroll math) ---------- */
-var revealIO=new IntersectionObserver(function(entries){
-  entries.forEach(function(en){if(en.isIntersecting)en.target.classList.add("in")});
-},{threshold:.2});
-document.querySelectorAll(".head").forEach(function(h){revealIO.observe(h)});
-
-var hueIO=new IntersectionObserver(function(entries){
-  entries.forEach(function(en){
-    if(en.isIntersecting){
-      var cat=CATS.find(function(c){return c.id===en.target.id});
-      if(cat)document.documentElement.style.setProperty("--hue",cat.h);
-    }
-  });
-},{rootMargin:"-45% 0px -45% 0px",threshold:0});
-chapters.forEach(function(c){hueIO.observe(c.sec)});

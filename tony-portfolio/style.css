@@ -40,6 +40,7 @@ nav{
 .links::-webkit-scrollbar{display:none}
 nav a{text-decoration:none;padding:.2rem 0}
 nav a:hover{color:var(--accent)}
+nav a[aria-current=page]{color:var(--accent)}
 
 /* ---------- intro ---------- */
 .hero{
@@ -72,12 +73,16 @@ nav a:hover{color:var(--accent)}
 }
 .hero-controls button:hover{border-color:var(--accent);color:var(--accent)}
 
+/* ---------- category pages ---------- */
+.category-hero{
+  max-width:1100px;margin:0 auto;padding:10rem 5vw 1.8rem;text-align:left
+}
+.category-hero h1{font-size:clamp(3.5rem,10vw,7.5rem);font-weight:800;letter-spacing:-.055em}
+.category-hero>p:last-child{color:var(--mute);font-size:1.1rem;margin:.9rem 0 0}
+.work-page .chapter{padding:1rem 0 5.5rem;border-top:0}
+
 /* ---------- chapters (normal vertical flow — no scroll hijack) ---------- */
 .chapter{padding:5.5rem 0;border-top:1px solid var(--line)}
-.head{padding:0 5vw;max-width:640px;margin:0 auto 2.4rem;opacity:0;transform:translateY(24px);transition:opacity .7s ease,transform .7s ease}
-.head.in{opacity:1;transform:none}
-.head h2{font-size:clamp(2.2rem,7vw,4.4rem);font-weight:800}
-.head p{color:var(--mute);margin:.6rem 0 0}
 
 .carousel{position:relative}
 .track{
@@ -102,6 +107,18 @@ nav a:hover{color:var(--accent)}
 .frame:hover{box-shadow:0 20px 55px hsl(var(--hue) 80% 50% / .4)}
 .frame img,.frame video{width:100%;height:100%;object-fit:cover}
 .frame figcaption,.frame .cap{position:absolute}
+.video-frame{
+  display:grid;place-items:center;
+  background:radial-gradient(ellipse at 50% 35%,hsl(var(--hue) 35% 20%),var(--bg2) 72%);
+}
+.video-prompt{display:grid;justify-items:center;gap:.45rem;color:var(--fg);font-weight:700}
+.video-prompt small{color:var(--mute);font-size:.75rem;font-weight:500;letter-spacing:.08em;text-transform:uppercase}
+.play-icon{
+  width:3.5rem;height:3.5rem;border:1px solid var(--accent);border-radius:50%;
+  display:grid;place-items:center;padding-left:.2rem;color:var(--accent);
+  transition:background .2s ease,color .2s ease,transform .2s ease
+}
+.video-frame:hover .play-icon{background:var(--accent);color:#111;transform:scale(1.08)}
 .empty{color:var(--mute);font-style:italic;padding:0 4vw}
 
 .navbtn{
@@ -132,13 +149,14 @@ footer{padding:2rem 5vw calc(2rem + env(safe-area-inset-bottom,0px));color:var(-
 #lb{position:fixed;inset:0;z-index:20;background:rgba(0,0,0,.94);display:grid;place-items:center;padding:4vw}
 #lb[hidden]{display:none}
 #lb img,#lb video{max-width:min(94vw,1100px);max-height:88svh;border-radius:6px;object-fit:contain}
+#lbStatus{position:absolute;top:50%;left:50%;translate:-50% -50%;margin:0;color:var(--fg);font-size:.95rem}
+#lbStatus[hidden]{display:none}
 #lbClose{position:absolute;top:calc(14px + env(safe-area-inset-top,0px));right:16px;width:42px;height:42px;border-radius:50%;border:1px solid var(--line);background:rgba(255,255,255,.06);font-size:1.5rem;cursor:pointer}
 #lbClose:hover{background:var(--accent);color:#111}
 
 /* ---------- reduced motion / small screens ---------- */
 @media (prefers-reduced-motion:reduce){
   html{scroll-behavior:auto}
-  .head{transition:none;opacity:1;transform:none}
   .frame{transition:none}
 }
 @media (max-width:520px){
